@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input %}
+{% block title %}Sign in · Exam Portal{% endblock %}
+{% block content %}
+<section class="panel auth-panel">
+    <h1>Sign in</h1>
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {{ input('email', 'Email', request.form.get('email', ''), type='email', maxlength=254, autocomplete='username') }}
+        {{ input('password', 'Password', type='password', maxlength=128, autocomplete='current-password') }}
+        <button class="button">Sign in</button>
+    </form>
+    <div class="auth-links">
+        <a href="{{ url_for('auth.register', role='student') }}">Register as a student</a>
+        <a href="{{ url_for('auth.register', role='examiner') }}">Register as an examiner</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input %}
+{% block title %}{{ 'Add examiner' if admin_mode else 'Register' }} · Exam Portal{% endblock %}
+{% block content %}
+{% if admin_mode %}<a class="back" href="{{ url_for('admin.people') }}">← People</a>{% endif %}
+<section class="panel {{ 'form-panel' if admin_mode else 'auth-panel' }}">
+    <h1>{{ 'Add examiner' if admin_mode else role|capitalize ~ ' registration' }}</h1>
+    {% if role == 'examiner' and not admin_mode %}<p class="muted">An admin will review your registration before you can sign in.</p>{% endif %}
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {{ input('name', 'Full name', request.form.get('name', ''), maxlength=120, autocomplete='name') }}
+        {{ input('email', 'Email', request.form.get('email', ''), type='email', maxlength=254, autocomplete='email') }}
+        {% if role == 'student' %}
+            {{ input('roll_no', 'Roll number', request.form.get('roll_no', ''), maxlength=40) }}
+        {% else %}
+            {{ input('department', 'Department', request.form.get('department', ''), maxlength=120) }}
+        {% endif %}
+        {{ input('password', 'Password (8 or more characters)', type='password', maxlength=128, autocomplete='new-password') }}
+        <button class="button">{{ 'Add examiner' if admin_mode else 'Create account' }}</button>
+    </form>
+    {% if not admin_mode %}<p class="auth-links"><a href="{{ url_for('auth.login') }}">Back to sign in</a></p>{% endif %}
+</section>
+{% endblock %}
