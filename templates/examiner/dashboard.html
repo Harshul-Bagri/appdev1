@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import status %}
+{% from 'tables.html' import slots_table %}
+{% block title %}My examinations · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>My examinations</h1></div>
+<section class="panel">
+    <h2>Assigned examinations</h2>
+    {% if exams %}
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">Examination</th><th scope="col">Course</th><th scope="col">Slot creation closes</th><th scope="col">Status</th></tr></thead>
+        <tbody>{% for exam in exams %}
+            <tr><td><a href="{{ url_for('examiner.exam_detail', exam_id=exam.id) }}">{{ exam.title }}</a></td>
+                <td>{{ exam.course_code }}</td><td class="nowrap">{{ exam.slot_close|date }}</td><td>{{ status(exam.status) }}</td></tr>
+        {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">An admin will assign your examinations here.</p>{% endif %}
+</section>
+<section class="panel">
+    <h2>My slots</h2>
+    {{ slots_table(slots, 'examiner') }}
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input, textarea %}
+{% block title %}Evaluate booking · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.slot_detail', slot_id=booking.slot_id) }}">← Slot roster</a>
+<section class="panel form-panel">
+    <h1>Evaluate {{ booking.student_name }}</h1>
+    <p class="muted">{{ booking.exam_title }} · {{ booking.roll_no }} · Booking #{{ booking.id }}</p>
+    {% if can_mark %}
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {% for criterion in rubrics %}
+        <div>
+            {{ input('score_' ~ criterion.id, criterion.criterion ~ ' (out of ' ~ criterion.max_marks ~ ', ' ~ criterion.weight ~ '% weight)',
+                     request.form.get('score_' ~ criterion.id, ''), type='number', min=0, max=criterion.max_marks, step='0.01') }}
+            {% if criterion.description %}<p class="hint">{{ criterion.description }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        {{ textarea('remarks', 'Remarks for the student', request.form.get('remarks', ''), maxlength=2000) }}
+        <button class="button">Submit evaluation</button>
+    </form>
+    {% elif not ended %}
+    <p>Marks can be submitted once this slot ends at {{ booking.end_at|date }}.</p>
+    {% else %}<p>Ask the admin to set up a rubric with weights that total 100%.</p>{% endif %}
+</section>
+{% endblock %}

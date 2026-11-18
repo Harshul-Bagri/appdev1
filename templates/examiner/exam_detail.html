@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import status %}
+{% from 'tables.html' import slots_table, rubric_table %}
+{% block title %}{{ exam.title }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.dashboard') }}">← My examinations</a>
+<div class="page-heading">
+    <div><p class="kicker muted">{{ exam.course_code }} · {{ exam.course_name }}</p><h1>{{ exam.title }}</h1></div>
+    {{ status(exam.status) }}
+</div>
+<section class="panel">
+    <div class="section-heading"><h2>My slots</h2>
+        {% if can_create %}<a class="button" href="{{ url_for('examiner.slot_form', exam_id=exam.id) }}">Create slot</a>{% endif %}
+    </div>
+    <p class="muted">Slot creation window {{ exam.slot_open|date }} to {{ exam.slot_close|date }}.</p>
+    {% if not can_create %}<p class="muted">Slot creation is currently closed.</p>{% endif %}
+    {{ slots_table(slots, 'examiner', false) }}
+</section>
+<section class="panel">
+    <h2>Rubric</h2>
+    {{ rubric_table(rubrics) }}
+</section>
+{% endblock %}

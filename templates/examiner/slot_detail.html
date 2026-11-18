@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, status %}
+{% from 'tables.html' import bookings_table %}
+{% block title %}Slot #{{ slot.id }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.exam_detail', exam_id=slot.exam_id) }}">← {{ slot.exam_title }}</a>
+<div class="page-heading"><h1>Slot #{{ slot.id }}</h1>{{ status(slot.status) }}</div>
+<section class="panel">
+    <h2>{{ slot.exam_title }}</h2>
+    <p>{{ slot.start_at|date }} to {{ slot.end_at|date }}</p>
+    <p>{{ slot.capacity - slot.seats_left }} / {{ slot.capacity }} seats taken</p>
+    {% if can_change %}
+    <div class="actions">
+        <a class="button secondary" href="{{ url_for('examiner.slot_form', slot_id=slot.id) }}">Edit slot</a>
+        <form method="post" action="{{ url_for('examiner.slot_remove', slot_id=slot.id) }}">
+            {{ csrf() }}<button class="button danger">Remove slot</button>
+        </form>
+    </div>
+    {% endif %}
+</section>
+<section class="panel">
+    <h2>Student roster</h2>
+    {{ bookings_table(bookings, 'examiner') }}
+</section>
+{% endblock %}

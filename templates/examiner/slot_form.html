@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input %}
+{% block title %}{{ 'Edit slot' if slot else 'Create slot' }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.exam_detail', exam_id=exam.id) }}">← {{ exam.title }}</a>
+<section class="panel form-panel">
+    <h1>{{ 'Edit slot' if slot else 'Create slot' }}</h1>
+    {% if can_change %}
+    <p class="muted">Each slot lasts {{ exam.duration }} minutes. The earliest start is {{ exam.booking_close|date }}.</p>
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {{ input('start_at', 'Slot start (IST)', values.start_at|default(''), type='datetime-local', min=exam.booking_close) }}
+        {{ input('capacity', 'Number of seats', values.capacity|default(1), type='number', min=1, max=1000) }}
+        <button class="button">Save slot</button>
+    </form>
+    {% else %}<p class="muted">{{ 'This slot can only be changed before booking starts.' if slot else 'Slot creation is closed for this examination.' }}</p>{% endif %}
+</section>
+{% endblock %}
