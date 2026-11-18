@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import search %}
+{% from 'tables.html' import bookings_table %}
+{% block title %}Bookings · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Bookings</h1></div>
+<section class="panel">
+    {{ search(q, 'Student, examination or booking ID') }}
+    {{ bookings_table(bookings, 'admin') }}
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, status %}
+{% from 'tables.html' import rubric_table %}
+{% block title %}{{ exam.title }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.exams') }}">← Examinations</a>
+<div class="page-heading">
+    <div><p class="muted kicker">{{ exam.course_code }} · {{ exam.course_name }}</p><h1>{{ exam.title }}</h1></div>
+    {% if exam.status != 'completed' %}<a class="button secondary" href="{{ url_for('admin.exam_form', exam_id=exam.id) }}">Edit examination</a>{% endif %}
+</div>
+<section class="panel">
+    <div class="section-heading"><h2>Timeline and status</h2>{{ status(exam.status) }}</div>
+    <p class="muted">{{ exam.duration }} minutes · {{ exam.max_marks }} maximum marks</p>
+    <dl class="details">
+        <div><dt>Slot creation opens</dt><dd>{{ exam.slot_open|date }}</dd></div>
+        <div><dt>Slot creation closes</dt><dd>{{ exam.slot_close|date }}</dd></div>
+        <div><dt>Booking opens</dt><dd>{{ exam.booking_open|date }}</dd></div>
+        <div><dt>Booking closes</dt><dd>{{ exam.booking_close|date }}</dd></div>
+    </dl>
+    {% if exam.status != 'completed' %}
+    <form method="post" action="{{ url_for('admin.exam_status', exam_id=exam.id) }}" class="filters">
+        {{ csrf() }}
+        <label class="field">Change status
+            <select name="status">
+                {% for option in statuses %}<option value="{{ option }}" {% if option == exam.status %}selected{% endif %}>{{ option|status }}</option>{% endfor %}
+            </select>
+        </label>
+        <button class="button">Save status</button>
+    </form>
+    <p class="muted">The status and its date window must both allow slot creation or booking.</p>
+    {% endif %}
+    <a href="{{ url_for('admin.slots', exam=exam.id) }}">View examination slots</a>
+</section>
+<section class="panel">
+    <div class="section-heading">
+        <h2>Rubric</h2>
+        {% if exam.status != 'completed' %}<a href="{{ url_for('admin.rubric_form', exam_id=exam.id) }}">Add criterion</a>{% endif %}
+    </div>
+    <p class="muted">Total weight {{ rubrics|sum(attribute='weight') }}%. Booking requires a total of 100%.</p>
+    {{ rubric_table(rubrics, exam.id if exam.status != 'completed' else none) }}
+</section>
+<section class="panel">
+    <h2>Assigned examiners</h2>
+    {% if assigned %}
+    <ul class="people-list">
+        {% for examiner in assigned %}
+        <li><span>{{ examiner.name }} {{ status(examiner.status) }}</span>
+            {% if exam.status != 'completed' %}
+            <form method="post" action="{{ url_for('admin.assignment', exam_id=exam.id) }}">
+                {{ csrf() }}<input type="hidden" name="examiner_id" value="{{ examiner.id }}">
+                <button class="text-button" name="action" value="remove">Unassign</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No examiners assigned.</p>{% endif %}
+    {% if available and exam.status != 'completed' %}
+    <form method="post" action="{{ url_for('admin.assignment', exam_id=exam.id) }}" class="filters">
+        {{ csrf() }}
+        <label class="field">Examiner <select name="examiner_id" required>
+            <option value="">Choose an examiner</option>
+            {% for examiner in available %}<option value="{{ examiner.id }}">{{ examiner.name }}</option>{% endfor %}
+        </select></label>
+        <button class="button secondary">Assign</button>
+    </form>
+    {% endif %}
+</section>
+{% if exam.status == 'draft' %}
+<form method="post" action="{{ url_for('admin.remove_exam', exam_id=exam.id) }}">
+    {{ csrf() }}<button class="button danger">Remove draft</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input, textarea %}
+{% block title %}Rubric criterion · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">← {{ exam.title }}</a>
+<section class="panel form-panel">
+    <h1>{{ 'Edit criterion' if rubric else 'Add criterion' }}</h1>
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {{ input('criterion', 'Criterion', values.criterion|default(''), maxlength=120) }}
+        {{ textarea('description', 'Description', values.description|default('')) }}
+        <div class="form-grid">
+            {{ input('max_marks', 'Maximum marks', values.max_marks|default(''), type='number', min=1, max=10000) }}
+            {{ input('weight', 'Weight (%)', values.weight|default(''), type='number', min=1, max=100) }}
+        </div>
+        <button class="button">Save criterion</button>
+    </form>
+</section>
+{% if rubric %}
+<form method="post">
+    {{ csrf() }}<button class="button danger" name="action" value="remove">Remove criterion</button>
+</form>
+{% endif %}
+{% endblock %}

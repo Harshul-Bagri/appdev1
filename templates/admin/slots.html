@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from 'tables.html' import slots_table %}
+{% block title %}Slots · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Examination slots</h1></div>
+<section class="panel">
+    <form method="get" class="filters">
+        <label class="field">Examination
+            <select name="exam">
+                <option value="">All examinations</option>
+                {% for exam in exams %}<option value="{{ exam.id }}" {% if exam.id == exam_id %}selected{% endif %}>{{ exam.title }}</option>{% endfor %}
+            </select>
+        </label>
+        <button class="button secondary">Filter</button>
+    </form>
+    {{ slots_table(slots, 'admin') }}
+</section>
+{% endblock %}

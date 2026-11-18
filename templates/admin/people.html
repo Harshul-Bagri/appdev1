@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, search, status %}
+{% block title %}People · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>People</h1><a class="button" href="{{ url_for('admin.add_examiner') }}">Add examiner</a></div>
+<section class="panel">
+    <nav class="tabs" aria-label="Account type">
+        <a href="{{ url_for('admin.people', role='examiner') }}" {% if role == 'examiner' %}aria-current="page"{% endif %}>Examiners</a>
+        <a href="{{ url_for('admin.people', role='student') }}" {% if role == 'student' %}aria-current="page"{% endif %}>Students</a>
+    </nav>
+    {{ search(q, 'Name, email or ID', role) }}
+    {% if users %}
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Email</th>
+            <th scope="col">{{ 'Department' if role == 'examiner' else 'Roll number' }}</th><th scope="col">Status</th>
+            {% if role == 'examiner' %}<th scope="col"><span class="visually-hidden">Action</span></th>{% endif %}
+        </tr></thead>
+        <tbody>{% for user in users %}<tr>
+            <td>#{{ user.id }}</td><td>{{ user.name }}</td><td>{{ user.email }}</td><td>{{ user.department if role == 'examiner' else user.roll_no }}</td>
+            <td>{{ status(user.status) }}</td>
+            {% if role == 'examiner' %}
+            <td><form method="post" action="{{ url_for('admin.person_status', user_id=user.id) }}" class="actions">
+                {{ csrf() }}
+                {% if user.status != 'active' %}<button class="button compact secondary" name="status" value="active">{{ 'Approve' if user.status == 'pending' else 'Activate' }}</button>{% endif %}
+                {% if user.status != 'inactive' %}<button class="button compact danger" name="status" value="inactive">Deactivate</button>{% endif %}
+            </form></td>
+            {% endif %}
+        </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">No {{ role }} accounts found.</p>{% endif %}
+</section>
+{% endblock %}

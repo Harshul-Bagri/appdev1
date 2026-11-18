@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, status %}
+{% from 'tables.html' import bookings_table %}
+{% block title %}Slot #{{ slot.id }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.slots') }}">← Slots</a>
+<div class="page-heading"><h1>Slot #{{ slot.id }}</h1>{{ status(slot.status) }}</div>
+<section class="panel">
+    <h2>{{ slot.exam_title }}</h2>
+    <p>{{ slot.start_at|date }} to {{ slot.end_at|date }}</p>
+    <p>Examiner <strong>{{ slot.examiner_name }}</strong> · {{ slot.capacity - slot.seats_left }} / {{ slot.capacity }} seats taken</p>
+    {% if examiners and slot.status == 'open' and not bookings|selectattr('status', 'equalto', 'completed')|list %}
+    <form method="post" class="filters">
+        {{ csrf() }}
+        <label class="field">Assign another examiner
+            <select name="examiner_id" required>
+                <option value="">Choose an examiner</option>
+                {% for examiner in examiners if examiner.id != slot.examiner_id %}
+                <option value="{{ examiner.id }}">{{ examiner.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="button">Change examiner</button>
+    </form>
+    {% endif %}
+</section>
+<section class="panel"><h2>Booking records</h2>{{ bookings_table(bookings, 'admin') }}</section>
+{% endblock %}

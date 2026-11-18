@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Courses · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Courses</h1><a class="button" href="{{ url_for('admin.course_form') }}">New course</a></div>
+<section class="panel">
+{% if courses %}
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">Code</th><th scope="col">Course</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Action</span></th></tr></thead>
+        <tbody>
+        {% for course in courses %}
+        <tr><td>{{ course.code }}</td><td>{{ course.name }}{% if course.description %}<small>{{ course.description }}</small>{% endif %}</td>
+            <td>{{ 'Active' if course.active else 'Archived' }}</td><td><a href="{{ url_for('admin.course_form', course_id=course.id) }}">Edit</a></td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+{% else %}<p class="empty">Create a course before adding an examination.</p>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input, textarea %}
+{% block title %}{{ 'Edit course' if course else 'New course' }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.courses') }}">← Courses</a>
+<section class="panel form-panel">
+    <h1>{{ 'Edit course' if course else 'New course' }}</h1>
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {{ input('code', 'Course code', values.code|default(''), maxlength=30) }}
+        {{ input('name', 'Course name', values.name|default(''), maxlength=120) }}
+        {{ textarea('description', 'Description', values.description|default('')) }}
+        <label class="check"><input type="checkbox" name="active" value="1" {% if values.active|default(1 if request.method == 'GET' else 0)|int %}checked{% endif %}> Active course</label>
+        <button class="button">Save course</button>
+    </form>
+</section>
+{% if course %}
+<section class="panel form-panel">
+    <h2>Remove course</h2>
+    <p class="muted">Courses with examinations are archived to keep their history.</p>
+    <form method="post" action="{{ url_for('admin.remove_course', course_id=course.id) }}">
+        {{ csrf() }}<button class="button danger">Remove course</button>
+    </form>
+</section>
+{% endif %}
+{% endblock %}

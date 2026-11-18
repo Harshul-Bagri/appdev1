@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% from 'tables.html' import bookings_table %}
+{% block title %}Admin overview · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Admin overview</h1><a class="button" href="{{ url_for('admin.exam_form') }}">New examination</a></div>
+<dl class="totals">
+    {% for key, label, endpoint in [('courses','Courses','admin.courses'), ('exams','Examinations','admin.exams'),
+                                ('examiners','Examiners','admin.people'), ('students','Students','admin.people'),
+                                ('slots','Slots','admin.slots'), ('bookings','Bookings','admin.bookings')] %}
+        <div><dt><a href="{{ url_for(endpoint, role='student') if key == 'students' else url_for(endpoint) }}">{{ label }}</a></dt><dd>{{ counts[key] }}</dd></div>
+    {% endfor %}
+</dl>
+{% if pending %}
+<p class="notice"><a href="{{ url_for('admin.people') }}">Review {{ pending }} pending examiner {{ 'request' if pending == 1 else 'requests' }}</a></p>
+{% endif %}
+<section class="panel">
+    <div class="section-heading"><h2>Recent bookings</h2><a href="{{ url_for('admin.bookings') }}">All bookings</a></div>
+    {{ bookings_table(bookings, 'admin') }}
+</section>
+{% endblock %}

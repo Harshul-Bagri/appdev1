@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import search, status %}
+{% block title %}Examinations · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Examinations</h1><a class="button" href="{{ url_for('admin.exam_form') }}">New examination</a></div>
+<section class="panel">
+    {{ search(q, 'Title, course code or exam ID') }}
+    {% if exams %}
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">ID</th><th scope="col">Examination</th><th scope="col">Course</th><th scope="col">Booking closes</th><th scope="col">Status</th></tr></thead>
+        <tbody>{% for exam in exams %}
+            <tr><td>#{{ exam.id }}</td><td><a href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">{{ exam.title }}</a></td>
+                <td>{{ exam.course_code }}</td><td class="nowrap">{{ exam.booking_close|date }}</td><td>{{ status(exam.status) }}</td></tr>
+        {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">No examinations found.</p>{% endif %}
+</section>
+{% endblock %}
