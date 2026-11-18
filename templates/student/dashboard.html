@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% from 'tables.html' import bookings_table %}
+{% block title %}Examinations · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Examinations</h1></div>
+<section class="panel">
+    <h2>Find an examination</h2>
+    <form method="get" class="filters">
+        <label class="field">Search
+            <input type="search" name="q" value="{{ q }}" maxlength="120" placeholder="Title or course code">
+        </label>
+        <label class="field">Course
+            <select name="course">
+                <option value="">All courses</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}" {% if course.id == course_id %}selected{% endif %}>{{ course.code }} · {{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="button secondary">Search</button>
+        {% if q or course_id %}<a href="{{ url_for('student.dashboard') }}">Clear</a>{% endif %}
+    </form>
+    {% if exams %}
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">Examination</th><th scope="col">Course</th><th scope="col">Booking closes</th><th scope="col">Booking</th></tr></thead>
+        <tbody>{% for exam in exams %}
+        <tr><td><a href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">{{ exam.title }}</a></td>
+            <td>{{ exam.course_code }}</td><td>{{ exam.booking_close|date }}</td>
+            <td>
+                {% if exam.status == 'booking_open' and exam.booking_open <= time %}
+                <span class="status booking_open">Open</span>
+                {% elif exam.status != 'closed' and exam.booking_open > time %}Scheduled for {{ exam.booking_open|date }}
+                {% else %}Closed{% endif %}
+            </td></tr>
+        {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">No examinations found.</p>{% endif %}
+</section>
+<section class="panel">
+    <div class="section-heading"><h2>Upcoming bookings</h2><a href="{{ url_for('student.bookings') }}">Booking history</a></div>
+    {{ bookings_table(upcoming, 'student') }}
+</section>
+<section class="panel">
+    <h2>Next available slots</h2>
+    {% if slots %}
+    <ul class="people-list">
+        {% for slot in slots %}
+        <li><span>{{ slot.start_at|date }} · {{ slot.seats_left }} {{ 'seat' if slot.seats_left == 1 else 'seats' }} free</span>
+            <a href="{{ url_for('student.exam_detail', exam_id=slot.exam_id) }}">{{ slot.exam_title }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}<p class="empty">There are no open slots to book right now.</p>{% endif %}
+</section>
+{% endblock %}

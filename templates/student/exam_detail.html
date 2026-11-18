@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf %}
+{% block title %}{{ exam.title }} · Exam Portal{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('student.dashboard') }}">← Examinations</a>
+<div class="page-heading">
+    <div><p class="kicker muted">{{ exam.course_code }} · {{ exam.course_name }}</p><h1>{{ exam.title }}</h1></div>
+</div>
+{% if existing %}
+<p class="notice">You already have a booking for this examination. <a href="{{ url_for('student.booking_detail', booking_id=existing.id) }}">View booking</a></p>
+{% endif %}
+<section class="panel">
+    <h2>Examination slots</h2>
+    <p class="muted">{{ exam.duration }} minutes · {{ exam.max_marks }} marks · Booking closes {{ exam.booking_close|date }}</p>
+    {% if not open_for_booking %}<p>Booking is currently closed.</p>{% endif %}
+    {% if slots %}
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">Time</th><th scope="col">Examiner</th><th scope="col">Seats free</th>
+            <th scope="col"><span class="visually-hidden">Action</span></th></tr></thead>
+        <tbody>{% for slot in slots %}
+        <tr><td>{{ slot.start_at|date }}<small>Ends {{ slot.end_at|date }}</small></td>
+            <td>{{ slot.examiner_name }}</td><td>{{ slot.seats_left }} / {{ slot.capacity }}</td>
+            <td>
+                {% if slot.seats_left == 0 %}Full
+                {% elif open_for_booking and not existing %}
+                <form method="post" action="{{ url_for('student.book', slot_id=slot.id) }}">
+                    {{ csrf() }}<button class="button compact">Book slot</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="empty">No upcoming slots are listed.</p>{% endif %}
+</section>
+{% endblock %}

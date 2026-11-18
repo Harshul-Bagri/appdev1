@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% from 'tables.html' import bookings_table %}
+{% block title %}My bookings · Exam Portal{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>My bookings</h1></div>
+<section class="panel">{{ bookings_table(bookings, 'student') }}</section>
+{% endblock %}

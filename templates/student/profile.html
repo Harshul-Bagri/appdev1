@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, input %}
+{% block title %}Profile · Exam Portal{% endblock %}
+{% block content %}
+<section class="panel form-panel">
+    <h1>My profile</h1>
+    <form method="post" class="stack">
+        {{ csrf() }}
+        {{ input('name', 'Full name', values.name, maxlength=120, autocomplete='name') }}
+        {{ input('email', 'Email', values.email, type='email', maxlength=254, autocomplete='email') }}
+        {{ input('roll_no', 'Roll number', values.roll_no, maxlength=40) }}
+        <button class="button">Save profile</button>
+    </form>
+</section>
+{% endblock %}
