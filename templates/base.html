@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Exam Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='portal.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="shell header-content">
+        <a class="brand" href="{{ url_for('home') }}">Exam Portal</a>
+        {% if g.user %}
+        <div class="account">
+            <span>{{ g.user.name }} <small>· {{ g.user.role|capitalize }}</small></span>
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="signout">Sign out</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</header>
+{% if g.user %}
+    {% set nav_role = g.user.role %}
+    {% if nav_role == 'admin' %}
+        {% set links = [('admin.dashboard','Overview'), ('admin.courses','Courses'), ('admin.exams','Examinations'),
+                        ('admin.people','People'), ('admin.slots','Slots'), ('admin.bookings','Bookings')] %}
+    {% elif nav_role == 'examiner' %}
+        {% set links = [('examiner.dashboard','My examinations')] %}
+    {% else %}
+        {% set links = [('student.dashboard','Examinations'), ('student.bookings','My bookings'), ('student.profile','Profile')] %}
+    {% endif %}
+    <nav class="site-nav" aria-label="Main navigation">
+        <div class="shell nav-links">
+        {% for endpoint, label in links %}
+            {% set nav_path = url_for(endpoint) %}
+            {% set active = request.path == nav_path or (not nav_path.endswith('/') and request.path.startswith(nav_path + '/')) %}
+            <a href="{{ nav_path }}" {% if active %}aria-current="page"{% endif %}>{{ label }}</a>
+        {% endfor %}
+        </div>
+    </nav>
+{% endif %}
+<main class="shell {% if not g.user %}signed-out{% endif %}">
+    {% for kind, message in get_flashed_messages(with_categories=true) %}
+    <p class="notice {{ 'error' if kind == 'error' }}" role="{{ 'alert' if kind == 'error' else 'status' }}">{{ message }}</p>
+    {% endfor %}
+    {% block content %}{% endblock %}
+</main>
+<footer class="shell footer">All times in IST</footer>
+</body>
+</html>

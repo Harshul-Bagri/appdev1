@@ -1,0 +1,30 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro input(name, label, value='', type='text', required=true, min=none, max=none, maxlength=none, step=none, autocomplete=none) %}
+<label class="field">{{ label }}
+    <input name="{{ name }}" type="{{ type }}" value="{{ value if value is not none else '' }}"
+           {% if required %}required{% endif %}
+           {% if min is not none %}min="{{ min }}"{% endif %}
+           {% if max is not none %}max="{{ max }}"{% endif %}
+           {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+           {% if step %}step="{{ step }}"{% endif %}
+           {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}>
+</label>
+{% endmacro %}
+
+{% macro textarea(name, label, value='', maxlength=1000) %}
+<label class="field">{{ label }}
+    <textarea name="{{ name }}" rows="4" maxlength="{{ maxlength }}">{{ value }}</textarea>
+</label>
+{% endmacro %}
+
+{% macro search(q, placeholder, role=none) %}
+<form method="get" class="filters">
+    {% if role %}<input type="hidden" name="role" value="{{ role }}">{% endif %}
+    <label class="field">Search <input type="search" name="q" value="{{ q }}" maxlength="120" placeholder="{{ placeholder }}"></label>
+    <button class="button secondary">Search</button>
+    {% if q %}<a href="{{ request.path }}{% if role %}?role={{ role }}{% endif %}">Clear</a>{% endif %}
+</form>
+{% endmacro %}
+
+{% macro status(value) %}<span class="status {{ value }}">{{ value|status }}</span>{% endmacro %}

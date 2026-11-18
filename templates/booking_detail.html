@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% from 'fields.html' import csrf, status %}
+{% block title %}Booking #{{ booking.id }} · Exam Portal{% endblock %}
+{% block content %}
+{% if g.user.role == 'examiner' %}
+    <a class="back" href="{{ url_for('examiner.slot_detail', slot_id=booking.slot_id) }}">← Slot roster</a>
+{% else %}
+    <a class="back" href="{{ url_for(g.user.role ~ '.bookings') }}">← Bookings</a>
+{% endif %}
+<div class="page-heading"><h1>Booking #{{ booking.id }}</h1>{{ status(booking.status) }}</div>
+<section class="panel">
+    <h2>{{ booking.exam_title }}</h2>
+    <dl class="details">
+        <div><dt>Student</dt><dd>{{ booking.student_name }}{% if booking.roll_no %} ({{ booking.roll_no }}){% endif %}</dd></div>
+        <div><dt>Examiner</dt><dd>{{ booking.examiner_name }}</dd></div>
+        <div><dt>Starts</dt><dd>{{ booking.start_at|date }}</dd></div>
+        <div><dt>Ends</dt><dd>{{ booking.end_at|date }}</dd></div>
+        <div><dt>Booked on</dt><dd>{{ booking.booked_at|date }}</dd></div>
+        {% if booking.moved_from_id %}<div><dt>Moved from</dt><dd>#{{ booking.moved_from_id }}</dd></div>{% endif %}
+        {% if g.user.role == 'student' and booking.status == 'booked' %}
+            <div><dt>Cancellation deadline</dt><dd>{{ booking.booking_close|date }}</dd></div>
+        {% endif %}
+    </dl>
+    {% if can_cancel %}
+        <form method="post" action="{{ url_for('student.cancel', booking_id=booking.id) }}">
+            {{ csrf() }}<button class="button danger">Cancel booking</button>
+        </form>
+    {% endif %}
+</section>
+{% if g.user.role == 'admin' and booking.status == 'booked' %}
+<section class="panel">
+    <h2>Reschedule booking</h2>
+    {% if options %}
+        <form method="post" class="filters">
+            {{ csrf() }}
+            <label class="field">New slot
+                <select name="slot_id" required><option value="">Choose a slot</option>
+                {% for slot in options %}
+                    <option value="{{ slot.id }}">{{ slot.start_at|date }} · {{ slot.examiner_name }} · {{ slot.seats_left }} free</option>
+                {% endfor %}
+                </select>
+            </label>
+            <button class="button">Reschedule</button>
+        </form>
+    {% else %}<p class="muted">There are no other slots with a free seat.</p>{% endif %}
+</section>
+{% endif %}
+{% if booking.total is not none %}
+<section class="panel">
+    <h2>Result</h2>
+    <p class="result">{{ '%g'|format(booking.total) }} / {{ booking.max_marks }}</p>
+    <p>{{ booking.remarks or 'No remarks were added.' }}</p>
+    <p class="muted">Marked by {{ booking.marked_by }} on {{ booking.marked_at|date }}</p>
+    <div class="table-responsive"><table>
+        <thead><tr><th scope="col">Criterion</th><th scope="col">Marks</th><th scope="col">Weight</th></tr></thead>
+        <tbody>{% for item in scores %}
+            <tr><td>{{ item.criterion }}</td><td>{{ '%g'|format(item.marks) }} / {{ item.max_marks }}</td><td>{{ item.weight }}%</td></tr>
+        {% endfor %}</tbody>
+    </table></div>
+</section>
+{% endif %}
+{% endblock %}

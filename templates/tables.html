@@ -1,0 +1,87 @@
+{% from 'fields.html' import status %}
+
+{% macro bookings_table(bookings, mode) %}
+{% if bookings %}
+<div class="table-responsive">
+<table>
+    <thead><tr>
+        <th scope="col">Booking</th>
+        {% if mode != 'student' %}<th scope="col">Student</th>{% endif %}
+        <th scope="col">Examination</th>
+        <th scope="col">Slot</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="visually-hidden">Action</span></th>
+    </tr></thead>
+    <tbody>
+        {% for item in bookings %}
+        <tr>
+            <td>#{{ item.id }}</td>
+            {% if mode != 'student' %}<td>{{ item.student_name }} <small>{{ item.roll_no or '' }}</small></td>{% endif %}
+            <td>{{ item.exam_title }}</td>
+            <td class="nowrap">{{ item.start_at|date }}</td>
+            <td>{{ status(item.status) }}</td>
+            <td>
+                {% if mode == 'examiner' %}
+                    <a href="{{ url_for('examiner.evaluate_booking', booking_id=item.id) }}">{{ 'Evaluate' if item.status == 'booked' else 'View' }}</a>
+                {% else %}
+                    <a href="{{ url_for(mode ~ '.booking_detail', booking_id=item.id) }}">View</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}<p class="empty">No bookings to show.</p>{% endif %}
+{% endmacro %}
+
+{% macro slots_table(slots, role, include_exam=true) %}
+{% if slots %}
+<div class="table-responsive">
+<table>
+    <thead><tr>
+        <th scope="col">Slot</th>
+        {% if include_exam %}<th scope="col">Examination</th>{% endif %}
+        {% if role == 'admin' %}<th scope="col">Examiner</th>{% endif %}
+        <th scope="col">Starts</th><th scope="col">Ends</th>
+        <th scope="col">Seats taken</th><th scope="col">Status</th>
+        <th scope="col"><span class="visually-hidden">Action</span></th>
+    </tr></thead>
+    <tbody>
+        {% for slot in slots %}
+        <tr>
+            <td>#{{ slot.id }}</td>
+            {% if include_exam %}<td>{{ slot.exam_title }}</td>{% endif %}
+            {% if role == 'admin' %}<td>{{ slot.examiner_name }}</td>{% endif %}
+            <td class="nowrap">{{ slot.start_at|date }}</td><td class="nowrap">{{ slot.end_at|date }}</td>
+            <td>{{ slot.capacity - slot.seats_left }} / {{ slot.capacity }}</td>
+            <td>{{ status(slot.status) }}</td>
+            <td><a href="{{ url_for(role ~ '.slot_detail', slot_id=slot.id) }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}<p class="empty">No slots to show.</p>{% endif %}
+{% endmacro %}
+
+{% macro rubric_table(rubrics, exam_id=none) %}
+{% if rubrics %}
+<div class="table-responsive">
+<table>
+    <thead><tr><th scope="col">Criterion</th><th scope="col">Maximum marks</th><th scope="col">Weight</th>
+        {% if exam_id %}<th scope="col"><span class="visually-hidden">Action</span></th>{% endif %}
+    </tr></thead>
+    <tbody>
+    {% for criterion in rubrics %}
+        <tr>
+            <td>{{ criterion.criterion }}{% if criterion.description %}<small>{{ criterion.description }}</small>{% endif %}</td>
+            <td>{{ criterion.max_marks }}</td><td>{{ criterion.weight }}%</td>
+            {% if exam_id %}<td><a href="{{ url_for('admin.rubric_form', exam_id=exam_id, rubric_id=criterion.id) }}">Edit</a></td>{% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}<p class="empty">No rubric criteria yet.</p>{% endif %}
+{% endmacro %}
