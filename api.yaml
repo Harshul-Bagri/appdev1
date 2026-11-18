@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: Examination Management Portal API
+  version: 1.0.0
+  description: Read-only JSON endpoints. Sign in through the portal first to obtain a session cookie.
+servers:
+  - url: http://127.0.0.1:5000
+security:
+  - sessionCookie: []
+paths:
+  /api/exams:
+    get:
+      summary: List examinations visible to the signed-in user
+      description: Admins see all exams. Examiners see their assignments. Students see current visible exams and exams in their booking history.
+      responses:
+        '200':
+          description: Examinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exam'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/bookings:
+    get:
+      summary: List bookings visible to the signed-in user
+      description: Admins see all bookings. Examiners see the bookings for their slots. Students see their own bookings.
+      responses:
+        '200':
+          description: Booking history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/examiners:
+    get:
+      summary: List examiners as an admin
+      responses:
+        '200':
+          $ref: '#/components/responses/People'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/students:
+    get:
+      summary: List students as an admin
+      responses:
+        '200':
+          $ref: '#/components/responses/People'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+  responses:
+    Unauthorized:
+      description: No active session
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Admin access required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    People:
+      description: Matching accounts
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Person'
+  schemas:
+    LocalTime:
+      type: string
+      description: Local date and time in IST, to the minute.
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$'
+      example: '2026-11-18T10:00'
+    Exam:
+      type: object
+      required: [id, title, course_code, status, duration, max_marks, slot_open, slot_close, booking_open, booking_close]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        course_code: { type: string }
+        status:
+          type: string
+          enum: [draft, slot_creation, booking_open, closed, completed]
+        duration:
+          type: integer
+          description: Minutes
+        max_marks: { type: integer }
+        slot_open: { $ref: '#/components/schemas/LocalTime' }
+        slot_close: { $ref: '#/components/schemas/LocalTime' }
+        booking_open: { $ref: '#/components/schemas/LocalTime' }
+        booking_close: { $ref: '#/components/schemas/LocalTime' }
+    Booking:
+      type: object
+      required: [id, exam_id, slot_id, student_id, status, booked_at, moved_from_id]
+      properties:
+        id: { type: integer }
+        exam_id: { type: integer }
+        slot_id: { type: integer }
+        student_id: { type: integer }
+        status:
+          type: string
+          enum: [booked, cancelled, rescheduled, completed]
+        booked_at: { $ref: '#/components/schemas/LocalTime' }
+        moved_from_id: { type: [integer, 'null'] }
+    Person:
+      type: object
+      required: [id, name, email, department, roll_no, status]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        department: { type: [string, 'null'] }
+        roll_no: { type: [string, 'null'] }
+        status:
+          type: string
+          enum: [active, pending, inactive]
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
